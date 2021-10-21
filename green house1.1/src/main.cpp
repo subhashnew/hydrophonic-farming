@@ -4,6 +4,14 @@
 #include <PubSubClient.h>
 
 #define LED D4
+#define LED1 D4
+#define LED2 D4
+#define LED3 D4
+#define LED4 D4
+#define LED5 D4
+#define LED6 D4
+#define LED7 D4
+#define LED8 D4
 
 const char* SSID = "Dialog 4G 304";
 const char* PWD = "subnew19658";
@@ -60,6 +68,167 @@ void handleMessage(char *topic, byte *payload, unsigned int length) {
   
     else if(payload[3] == 111 && payload[4] == 110 ){//turn on LED manually
       digitalWrite(LED, HIGH);
+    }
+  }
+  
+  
+//-----------------------Growth Chamber PH value--------------------------------------------------------------------------------------------------------------------------------
+
+ if(payload[0] == 71 &&  payload[1] == 80){//automatic mode
+    int GP_Ph_value  = ((int)payload[2]-48)*10+(int)(payload[3])-48;
+    Serial.println(GP_Ph_value);
+      if(GP_Ph_value<55 && GP_Ph_value >0 ){//turn on LED
+        digitalWrite(LED1, HIGH);
+      }
+      else if(GP_Ph_value > 55 && GP_Ph_value < 90 ){
+        digitalWrite(LED1, LOW);
+      }
+   }
+  if(payload[0] == 71 &&  payload[1] == 80 &&  payload[2] == 95){//manual mode
+    if(payload[3] == 111 && payload[4] == 102 && payload[5] == 102){//turn off LED manually
+      digitalWrite(LED1, LOW);
+    }
+  
+    else if(payload[3] == 111 && payload[4] == 110 ){//turn on LED manually
+      digitalWrite(LED1, HIGH);
+    }
+  }
+ 
+ //-----------------------Growth Chamber EC value--------------------------------------------------------------------------------------------------------------------------------
+ 
+  if(payload[0] == 71 &&  payload[1] == 69){//automatic mode
+    int GE_EC_value  = ((int)payload[2]-48)*10+(int)(payload[3])-48;
+    Serial.println(GE_EC_value);
+      if(GE_EC_value<12 && GE_EC_value >0 ){//turn on LED
+        digitalWrite(LED2, HIGH);
+      }
+      else if(GE_EC_value > 12 && GE_EC_value < 30 ){
+        digitalWrite(LED2, LOW);
+      }
+   }
+  if(payload[0] == 71 &&  payload[1] == 69 &&  payload[2] == 95){//manual mode
+    if(payload[3] == 111 && payload[4] == 102 && payload[5] == 102){//turn off LED manually
+      digitalWrite(LED2, LOW);
+    }
+  
+    else if(payload[3] == 111 && payload[4] == 110 ){//turn on LED manually
+      digitalWrite(LED2, HIGH);
+    }
+  }
+ 
+ //-----------------------Growth Chamber DO value--------------------------------------------------------------------------------------------------------------------------------
+ 
+ if(payload[0] == 71 &&  payload[1] == 68){//automatic mode
+    int GP_Ph_value  = ((int)payload[2]-48)*10+(int)(payload[3])-48;
+    Serial.println(GP_Ph_value);
+      if(GP_Ph_value<50 && GP_Ph_value >0 ){//turn on LED
+      digitalWrite(LED3, HIGH);
+      }
+      else if(GP_Ph_value > 50 && GP_Ph_value < 90 ){
+      digitalWrite(LED3, LOW);
+      }
+   }
+  if(payload[0] == 71 &&  payload[1] == 68 &&  payload[2] == 95){//manual mode
+    if(payload[3] == 111 && payload[4] == 102 && payload[5] == 102){//turn off LED manually
+      digitalWrite(LED3, LOW);
+    }
+  
+    else if(payload[3] == 111 && payload[4] == 110 ){//turn on LED manually
+      digitalWrite(LED3, HIGH);
+    }
+  }
+ 
+ //-----------------------Growth Chamber Water Level--------------------------------------------------------------------------------------------------------------------------------
+ 
+ if(payload[0] == 71 &&  payload[1] == 87){//automatic mode
+    int GW_Water_Level  = ((int)payload[2]-48)*10+(int)(payload[3])-48;
+    Serial.println(GW_Water_Level);
+      if(GW_Water_Level<10 && GW_Water_Level >0 ){//turn on LED
+        digitalWrite(LED4, HIGH);
+      }
+      else if(GW_Water_Level > 10 && GW_Water_Level < 20 ){
+        digitalWrite(LED4, LOW);
+      }
+   }
+  if(payload[0] == 71 &&  payload[1] == 87 &&  payload[2] == 95){//manual mode
+    if(payload[3] == 111 && payload[4] == 102 && payload[5] == 102){//turn off LED manually
+      digitalWrite(LED4, LOW);
+    }
+  
+    else if(payload[3] == 111 && payload[4] == 110 ){//turn on LED manually
+      digitalWrite(LED4, HIGH);
+    }
+  }
+  
+  
+//--------------------------Light Intensity Control-----------------------------------------------------------------------------------------------------------
+  //L1
+  if(payload[0] == 76 &&  payload[1] == 49){//automatic mode
+    int Light_intensity_value = ((int)payload[2]-48)*100+((int)(payload[3])-48)*10 + (int)(payload[4])-48;
+    Serial.println(Light_intensity_value);
+      if(400 > Light_intensity_value  ){//turn on LED
+        digitalWrite(LED6, HIGH);
+      }
+      else if((700 >Light_intensity_value) && (400 < Light_intensity_value)){
+        digitalWrite(LED6, LOW);
+      }
+   }
+  if(payload[0] == 76 &&  payload[1] == 49 &&  payload[2] == 95){//manual mode
+    if(payload[3] == 111 && payload[4] == 102 && payload[5] == 102){//turn off LED manually
+      digitalWrite(LED6, LOW);
+    }
+  
+    else if(payload[3] == 111 && payload[4] == 110 ){//turn on LED manually
+      digitalWrite(LED6, HIGH);
+    }
+  }
+ 
+}
+
+//--------------------------Temperature and Air Flow Control-------------------------------------------------------------------------------------------------
+  //T1
+  if(payload[0] == 84 &&  payload[1] == 49){//automatic mode
+    int inside_temperature_value = ((int)payload[2]-48)*10+((int)(payload[3])-48);
+    int outside_temperature_value = ((int)payload[4]-48)*10+((int)(payload[5])-48);
+    Serial.println(Light_intensity_value);
+      if((28 < inside_temperature_value) && ( 28 > outside_temperature_value)  ){//turn on LED
+        digitalWrite(LED7, HIGH);
+      }
+      else if((19 < inside_temperature_value) && ( 28 > inside_temperature_value)){
+        digitalWrite(LED7, LOW);
+      }
+   }
+  if(payload[0] == 84 &&  payload[1] == 49 &&  payload[2] == 95){//manual mode
+    if(payload[3] == 111 && payload[4] == 102 && payload[5] == 102){//turn off LED manually
+      digitalWrite(LED7, LOW);
+    }
+  
+    else if(payload[3] == 111 && payload[4] == 110 ){//turn on LED manually
+      digitalWrite(LED7, HIGH);
+    }
+  }
+ 
+}
+
+//--------------------------Humidity Control-----------------------------------------------------------------------------------------------------------------
+  //H1
+  if(payload[0] == 72 &&  payload[1] == 49){//automatic mode
+    int humidity_value = ((int)payload[2]-48)*10+((int)(payload[3])-48);
+    Serial.println(Light_intensity_value);
+      if(60 > humidity_value ){//turn on LED
+      digitalWrite(LED8, HIGH);
+      }
+      else if((70 > humidity_value) && (60 < humidity_value )){
+      digitalWrite(LED8, LOW);
+      }
+   }
+  if(payload[0] == 72 &&  payload[1] == 49 &&  payload[2] == 95){//manual mode
+    if(payload[3] == 111 && payload[4] == 102 && payload[5] == 102){//turn off LED manually
+      digitalWrite(LED8, LOW);
+    }
+  
+    else if(payload[3] == 111 && payload[4] == 110 ){//turn on LED manually
+      digitalWrite(LED8, HIGH);
     }
   }
  
