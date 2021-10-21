@@ -16,3 +16,111 @@ if the ,
 MQTT msg format
 "F154"  - to manuallt turn on
 "F156"  - to manually turn off
+
+
+************************Growth chamber***********************************
+
+**********Manual mode**********
+
+MQTT msg format
+
+	PH 
+
+"GP_on"  - to manuallt turn on   
+"GP_off"  - to manually turn off
+
+	EC value
+	
+"GE_on"  - to manuallt turn on   
+"GE_off"  - to manually turn off
+	
+	DO value
+	
+"GD_on"  - to manuallt turn on   
+"GD_off"  - to manually turn off
+
+	Water Level value
+	
+"GW_on"  - to manuallt turn on   
+"GW_off"  - to manually turn off
+
+**********Automatic Mode**********
+******PH********
+if the ,
+0.0<PH value < 5.5  - turn on
+9.0>PH value > 5.5  - turn off	
+
+
+MQTT msg format
+"F154"  - to manuallt turn on
+"F156"  - to manually turn off
+
+*********EC******
+if the ,
+0.0<EC value < 1.2  - turn on
+3.0>EC value > 1.2  - turn off	
+
+MQTT msg format
+"F154"  - to manuallt turn on
+"F156"  - to manually turn off
+
+*********DO******
+if the ,
+0.0<DO value < 5.0  - turn on
+9.0>DO value > 5.0  - turn off	
+
+MQTT msg format
+"F154"  - to manuallt turn on
+"F156"  - to manually turn off
+
+*********Water Level******
+if the ,
+0.0<Water Level< 10.0 cm - turn on
+20.0>Water Level> 10.0 cm  - turn off	
+
+MQTT msg format
+"F154"  - to manuallt turn on
+"F156"  - to manually turn off
+
+
+************************Light Intensity Control Unit***********************************
+
+**********Manual mode**********
+
+MQTT msg format
+"L1_on"  - to manually turn on
+"L1_off"  - to manually turn off
+
+**********Automatic Mode**********
+
+if the ,
+400 > Light_intensity_value       - turn on 
+400 < Light_intensity_value < 700 - turn off 
+
+************************Temperature and Air Flow Control Unit***********************************
+
+**********Manual mode**********
+
+MQTT msg format
+"T1_on"  - to manually turn on
+"T1_off"  - to manually turn off
+
+**********Automatic Mode**********
+
+if the ,
+28 > outside_temperature_value and 28 < inside_temperature_value  - turn on 
+19 < inside_temperature_value < 28                                - turn off 
+
+************************Humidity Control Unit***********************************
+
+**********Manual mode**********
+
+MQTT msg format
+"H1_on"  - to manually turn on
+"H1_off"  - to manually turn off
+
+**********Automatic Mode**********
+
+if the ,
+60 > humidity_value       - turn on 
+70 < humidity_value < 60  - turn off 
