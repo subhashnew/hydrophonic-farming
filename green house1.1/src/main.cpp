@@ -3,7 +3,15 @@
 #include <WiFiClient.h>
 #include <PubSubClient.h>
 
+//LED for the Fertilezer Unit
 #define LED D4
+#define LED_F D5
+
+//LED for the resevior unit
+#define LED_RP D6 //for Ph value
+#define LED_RL D3 //for water level low
+#define LED_RH D2 //for water level high
+#define LED_RD D1 //for water drain
 
 const char* SSID = "Dialog 4G 304";
 const char* PWD = "subnew19658";
@@ -16,6 +24,7 @@ const int mqtt_port = 1883;
 WiFiClient espClient;
 PubSubClient client(espClient);
 
+//connect to the wifi
 //connect to the wifi
 void connectToWiFi() {
   Serial.print("Connectiog");
@@ -43,26 +52,136 @@ void handleMessage(char *topic, byte *payload, unsigned int length) {
  Serial.println();
  Serial.println("-----------------------");
 
+ /*
+ ================  The fertilizer unit =====================
+ 1. Check whether the first character = F (70), second character = 1 (49)
+ 2. Settig the F1_Ph_value by combining two numbers in 3rd,4th character , Deduct 48 to get the int value from ascii values
+ */
+//issue found : manual mode also going to the automatic if condition
+//Solution : && payload[2]<58 & payload[2]>47 (only for 10 numbers)
+
  if(payload[0] == 70 &&  payload[1] == 49){//automatic mode
     int F1_Ph_value  = ((int)payload[2]-48)*10+(int)(payload[3])-48;
     Serial.println(F1_Ph_value);
       if(F1_Ph_value<55 && F1_Ph_value >0 ){//turn on LED
-      digitalWrite(LED, HIGH);
+      digitalWrite(LED_F, HIGH);
       }
       else if(F1_Ph_value > 55 && F1_Ph_value < 90 ){
-      digitalWrite(LED, LOW);
+      digitalWrite(LED_F, LOW);
       }
-   }
+  }
   if(payload[0] == 70 &&  payload[1] == 49 &&  payload[2] == 95){//manual mode
     if(payload[3] == 111 && payload[4] == 102 && payload[5] == 102){//turn off LED manually
-      digitalWrite(LED, LOW);
+      digitalWrite(LED_F, LOW);
     }
   
     else if(payload[3] == 111 && payload[4] == 110 ){//turn on LED manually
-      digitalWrite(LED, HIGH);
+      digitalWrite(LED_F, HIGH);
     }
   }
- 
+
+  /*
+  =================  Resevior Unit   =======================
+  
+  */
+
+  /*
+  +++++++++++++++++   R1 - Ph value  ++++++++++++++++++++++
+  1. Check whether the first character = R (82), second character = 1 (49)
+  */
+  if(payload[0] == 82 &&  payload[1] == 49){//automatic mode
+    int R1_Ph_value  = ((int)payload[2]-48)*10 + (int)(payload[3])-48;
+    Serial.println(R1_Ph_value);
+      if(R1_Ph_value<55 && R1_Ph_value >0 ){//turn on LED
+      digitalWrite(LED_RP, HIGH);
+      }
+      else if(R1_Ph_value > 55 && R1_Ph_value < 90 ){
+      digitalWrite(LED_RP, LOW);
+      }
+  }
+  if(payload[0] == 82 &&  payload[1] == 49 &&  payload[2] == 95){//manual mode
+    if(payload[3] == 111 && payload[4] == 102 && payload[5] == 102){//turn off LED manually
+      digitalWrite(LED_RP, LOW);
+    }
+  
+    else if(payload[3] == 111 && payload[4] == 110 ){//turn on LED manually
+      digitalWrite(LED_RP, HIGH);
+    }
+  }
+
+   /*
+  +++++++++++++++++++++  R2 - Resevior Level low   ++++++++++++++++++++++
+  1. Check whether the first character = R (82), second character = 2 (50)
+  */
+  if(payload[0] == 82 &&  payload[1] == 50){   //automatic mode
+    int water_low  = ((int)payload[2])-48;
+    Serial.println(water_low);
+      if(water_low == 0 ){   //turn on LED
+      digitalWrite(LED_RL, HIGH);
+      }
+      else if(water_low == 1){
+      digitalWrite(LED_RL, LOW);
+      }
+  }
+  if(payload[0] == 82 &&  payload[1] == 50 &&  payload[2] == 95){//manual mode
+    if(payload[3] == 111 && payload[4] == 102 && payload[5] == 102){//turn off LED manually
+      digitalWrite(LED_RL, LOW);
+    }
+  
+    else if(payload[3] == 111 && payload[4] == 110 ){//turn on LED manually
+      digitalWrite(LED_RL, HIGH);
+    }
+  }
+  
+  /*
+  +++++++++++++++++++++  R3 - Resevior Level High   ++++++++++++++++++++++
+  1. Check whether the first character = R (82), second character = 3 (51)
+  */
+  if(payload[0] == 82 &&  payload[1] == 51){//automatic mode
+    int water_high  = ((int)payload[2]-48);
+    Serial.println(water_high);
+      if(water_high == 1 ){//turn on LED
+      digitalWrite(LED_RH, HIGH);
+      }
+      else if(water_high == 0){
+      digitalWrite(LED_RH, LOW);
+      }
+  }
+  if(payload[0] == 82 &&  payload[1] == 51 &&  payload[2] == 95){//manual mode
+    if(payload[3] == 111 && payload[4] == 102 && payload[5] == 102){//turn off LED manually
+      digitalWrite(LED_RH, LOW);
+    }
+  
+    else if(payload[3] == 111 && payload[4] == 110 ){//turn on LED manually
+      digitalWrite(LED_RH, HIGH);
+    }
+  }
+
+  /*
+  +++++++++++++++++++++  R4 - Drain   ++++++++++++++++++++++
+  1. Check whether the first character = R (82), second character = 4 (52)
+  */
+  if(payload[0] == 82 &&  payload[1] == 52){//automatic mode
+    int drain  = ((int)payload[2]-48);
+    Serial.println(drain);
+      if(drain == 1 ){//turn on LED
+      digitalWrite(LED_RD, HIGH);
+      }
+      else if(drain == 0){
+      digitalWrite(LED_RD, LOW);
+      }
+  }
+  if(payload[0] == 82 &&  payload[1] == 52 &&  payload[2] == 95){//manual mode
+    if(payload[3] == 111 && payload[4] == 102 && payload[5] == 102){//turn off LED manually
+      digitalWrite(LED_RD, LOW);
+    }
+  
+    else if(payload[3] == 111 && payload[4] == 110 ){//turn on LED manually
+      digitalWrite(LED_RD, HIGH);
+    }
+  }
+
+
 }
 
 
