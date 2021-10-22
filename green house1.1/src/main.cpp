@@ -8,7 +8,6 @@
 #define LED_F D5
 
 //LED for the resevior unit
-#define LED_RP D6 //for Ph value
 #define LED_RL D3 //for water level low
 #define LED_RH D2 //for water level high
 #define LED_RD D1 //for water drain
@@ -54,9 +53,10 @@ void handleMessage(char *topic, byte *payload, unsigned int length) {
 
  /*
  ================  The fertilizer unit =====================
- 1. Check whether the first character = F (70), second character = 1 (49)
+ 1. Check whether the first character = F (70), second character = 1 (49) 
  2. Settig the F1_Ph_value by combining two numbers in 3rd,4th character , Deduct 48 to get the int value from ascii values
  */
+//++++++++++++++++++++++++ F1 +++++++++++++++++++++++++++++++++++++++++++
 //issue found : manual mode also going to the automatic if condition
 //Solution : && payload[2]<58 & payload[2]>47 (only for 10 numbers)
 
@@ -84,30 +84,6 @@ void handleMessage(char *topic, byte *payload, unsigned int length) {
   =================  Resevior Unit   =======================
   
   */
-
-  /*
-  +++++++++++++++++   R1 - Ph value  ++++++++++++++++++++++
-  1. Check whether the first character = R (82), second character = 1 (49)
-  */
-  if(payload[0] == 82 &&  payload[1] == 49){//automatic mode
-    int R1_Ph_value  = ((int)payload[2]-48)*10 + (int)(payload[3])-48;
-    Serial.println(R1_Ph_value);
-      if(R1_Ph_value<55 && R1_Ph_value >0 ){//turn on LED
-      digitalWrite(LED_RP, HIGH);
-      }
-      else if(R1_Ph_value > 55 && R1_Ph_value < 90 ){
-      digitalWrite(LED_RP, LOW);
-      }
-  }
-  if(payload[0] == 82 &&  payload[1] == 49 &&  payload[2] == 95){//manual mode
-    if(payload[3] == 111 && payload[4] == 102 && payload[5] == 102){//turn off LED manually
-      digitalWrite(LED_RP, LOW);
-    }
-  
-    else if(payload[3] == 111 && payload[4] == 110 ){//turn on LED manually
-      digitalWrite(LED_RP, HIGH);
-    }
-  }
 
    /*
   +++++++++++++++++++++  R2 - Resevior Level low   ++++++++++++++++++++++
