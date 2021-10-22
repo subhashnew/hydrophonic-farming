@@ -40,7 +40,7 @@ void connectToWiFi() {
 }
 
 //handling the incomming message
-void handleMessage(char *topic, byte *payload, unsigned int length) {
+void handleMessage(char *topic, byte *payload, int length) {
  Serial.print("Message arrived in topic: ");
  Serial.println(topic);
  Serial.print("Message:");
