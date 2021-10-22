@@ -3,14 +3,25 @@
 #include <WiFiClient.h>
 #include <PubSubClient.h>
 
-//LED for the Fertilezer Unit
-#define LED D4
-#define LED_F D5
+#define LED D0
 
 //LED for the resevior unit
-#define LED_RL D3 //for water level low
-#define LED_RH D2 //for water level high
-#define LED_RD D1 //for water drain
+#define LED_RL D1 //for water level low
+#define LED_RH D2//for water level high
+#define LED_RD D3 //for water drain
+
+//LED for the Fertilezer Unit
+#define LED_F D4
+
+//Groing Chamber LEDs
+#define LED_GP D5 //Ph value
+#define LED_GD D6//DO value
+
+//Light intesity control
+#define LED_L D7
+
+//Temperature Control Unit
+#define LED_T D8 //for water drain
 
 const char* SSID = "Dialog 4G 304";
 const char* PWD = "subnew19658";
@@ -52,7 +63,22 @@ void handleMessage(char *topic, byte *payload, int length) {
  Serial.println("-----------------------");
 
  /*
- ================  The fertilizer unit =====================
+ ============================             Control Units   ===============================
+ R2 - Resevior Levl Low               - LED_RL D1
+ R3 - Resevior Level High             - LED_RH D2
+ R4 - Resevior Drain                  - LED_RD D3
+ F1 - Fertilizer Unit                 - LED_F  D4
+ GP - Growing Chamber Ph Value        - LED_GP D5 
+ GD - Growing Chamber DO value        - LED_GD D6
+ GW - Growing Chamber Water Level     - not defined
+ L1 - Light intensity Control Unit    - LED_L  D7
+ T1 - Temperature and Airflow control - LED_T  D8
+ H1 - Humidity Control Unit           - not defined
+
+ */
+
+ /*
+ =================================  The fertilizer unit ================================
  1. Check whether the first character = F (70), second character = 1 (49) 
  2. Settig the F1_Ph_value by combining two numbers in 3rd,4th character , Deduct 48 to get the int value from ascii values
  */
@@ -81,8 +107,10 @@ void handleMessage(char *topic, byte *payload, int length) {
   }
 
   /*
-  =================  Resevior Unit   =======================
-  
+  ==============================  Resevior Unit   =====================================
+  R2 - Resevior Levl Low
+  R3 - Resevior Level High
+  R4 - Drain
   */
 
    /*
@@ -157,6 +185,110 @@ void handleMessage(char *topic, byte *payload, int length) {
     }
   }
 
+  /*
+  =============================  Grouwing Chamber   =====================================
+  GP - Ph Value
+  GD - DO value
+  */
+  /*
+  +++++++++++++++++++++++++++++   GP(71,80) - Chamber Ph value  ++++++++++++++++++++++++++++++++
+  */
+  if(payload[0] == 71 &&  payload[1] == 80){//automatic mode
+    int GP_Ph_value  = ((int)payload[2]-48)*10+(int)(payload[3])-48;
+    Serial.println(GP_Ph_value);
+      if(GP_Ph_value<55 && GP_Ph_value >0 ){//turn on LED
+        digitalWrite(LED_GP, HIGH);
+      }
+      else if(GP_Ph_value > 55 && GP_Ph_value < 90 ){
+        digitalWrite(LED_GP, LOW);
+      }
+  }
+  if(payload[0] == 71 &&  payload[1] == 80 &&  payload[2] == 95){//manual mode
+    if(payload[3] == 111 && payload[4] == 102 && payload[5] == 102){//turn off LED manually
+      digitalWrite(LED_GP, LOW);
+    }
+  
+    else if(payload[3] == 111 && payload[4] == 110 ){//turn on LED manually
+      digitalWrite(LED_GP, HIGH);
+    }
+  }
+
+  /*
+  +++++++++++++++++++++++++++++   GD(71,68) - Chamber DO value  ++++++++++++++++++++++++++++++++
+  */
+
+  if(payload[0] == 71 &&  payload[1] == 68){//automatic mode
+    int GP_Ph_value  = ((int)payload[2]-48)*10+(int)(payload[3])-48;
+    Serial.println(GP_Ph_value);
+      if(GP_Ph_value<50 && GP_Ph_value >0 ){//turn on LED
+      digitalWrite(LED_GD, HIGH);
+      }
+      else if(GP_Ph_value > 50 && GP_Ph_value < 90 ){
+      digitalWrite(LED_GD, LOW);
+      }
+   }
+  if(payload[0] == 71 &&  payload[1] == 68 &&  payload[2] == 95){//manual mode
+    if(payload[3] == 111 && payload[4] == 102 && payload[5] == 102){//turn off LED manually
+      digitalWrite(LED_GD, LOW);
+    }
+  
+    else if(payload[3] == 111 && payload[4] == 110 ){//turn on LED manually
+      digitalWrite(LED_GD, HIGH);
+    }
+  }
+  
+  /*
+  =============================  Light Intensity Control Unit   =====================================
+  */
+  /*
+  +++++++++++++++++++++++++++++  L1 (76,49) - Light Intensity  ++++++++++++++++++++++++++++++++++++++++++++
+  */
+
+  if(payload[0] == 76 &&  payload[1] == 49){//automatic mode
+    int Light_intensity_value = ((int)payload[2]-48)*100+((int)(payload[3])-48)*10 + (int)(payload[4])-48;
+    Serial.println(Light_intensity_value);
+      if(400 > Light_intensity_value  ){//turn on LED
+        digitalWrite(LED_L , HIGH);
+      }
+      else if((700 >Light_intensity_value) && (400 < Light_intensity_value)){
+        digitalWrite(LED_L, LOW);
+      }
+   }
+  if(payload[0] == 76 &&  payload[1] == 49 &&  payload[2] == 95){//manual mode
+    if(payload[3] == 111 && payload[4] == 102 && payload[5] == 102){//turn off LED manually
+      digitalWrite(LED_L, LOW);
+    }
+  
+    else if(payload[3] == 111 && payload[4] == 110 ){//turn on LED manually
+      digitalWrite(LED_L, HIGH);
+    }
+  }
+
+  /*
+  ============================= Temperature and Airflow control Unit ======================
+  T1 (84,49)
+  */
+  if(payload[0] == 84 &&  payload[1] == 49){//automatic mode
+    int inside_temperature_value = ((int)payload[2]-48)*10+((int)(payload[3])-48);
+    int outside_temperature_value = ((int)payload[4]-48)*10+((int)(payload[5])-48);
+    Serial.println(inside_temperature_value);
+    Serial.println(outside_temperature_value);
+      if((28 < inside_temperature_value) && ( 28 > outside_temperature_value)  ){//turn on LED
+        digitalWrite(LED_T, HIGH);
+      }
+      else if((19 < inside_temperature_value) && ( 28 > inside_temperature_value)){
+        digitalWrite(LED_T, LOW);
+      }
+   }
+  if(payload[0] == 84 &&  payload[1] == 49 &&  payload[2] == 95){//manual mode
+    if(payload[3] == 111 && payload[4] == 102 && payload[5] == 102){//turn off LED manually
+      digitalWrite(LED_T, LOW);
+    }
+  
+    else if(payload[3] == 111 && payload[4] == 110 ){//turn on LED manually
+      digitalWrite(LED_T, HIGH);
+    }
+  }
 
 }
 
