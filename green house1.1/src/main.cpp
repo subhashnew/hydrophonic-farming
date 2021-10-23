@@ -76,8 +76,8 @@ void handleMessage(char *topic, byte *payload, int length) {
  /*
  ============================             Control Units   ===============================
  R1 - Resevior to Fertilizer Motort   - LED_RM D1
- R2 - Resevior Levl Low               - LED_RP D2
- R3 - Resevior Level High             - LED_RP D2
+ R2 - Resevior Levl Low               - LED_RP 
+ R3 - Resevior Level High             - LED_RP 
  R4 - Resevior Drain                  - LED_RD D3
  F1 - Fertilizer Unit                 - LED_F  D4
  GP - Growing Chamber Ph Value        - LED_GP D5 
