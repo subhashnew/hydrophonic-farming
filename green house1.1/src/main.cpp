@@ -3,15 +3,36 @@
 #include <WiFiClient.h>
 #include <PubSubClient.h>
 
-#define LED D4
-#define LED1 D4
-#define LED2 D4
-#define LED3 D4
-#define LED4 D4
-#define LED5 D4
-#define LED6 D4
-#define LED7 D4
-#define LED8 D4
+#include <DHT.h>
+#include <Adafruit_Sensor.h>
+#include <DHT_U.h>
+
+#define DHTTYPE    DHT11     // DHT 11
+#define DHTPIN D2
+DHT_Unified dht(DHTPIN, DHTTYPE);
+uint32_t delayMS;
+//#define LED D0
+
+//LED for the resevior unit
+#define LED_RM D1 //R to F motor
+//#define LED_RP D2//Pump
+#define LED_RD D3 //for water drain
+
+//LED for the Fertilezer Unit
+#define LED_F D4
+
+//Groing Chamber LEDs
+#define LED_GP D5 //Ph value
+#define LED_GD D0//DO value
+
+//Light intesity control
+#define LED_L D6
+
+//Temperature Control Unit
+#define LED_T D7 //for water drain
+
+//humidity control unit
+#define LED_H D8
 
 const char* SSID = "Dialog 4G 304";
 const char* PWD = "subnew19658";
@@ -24,6 +45,7 @@ const int mqtt_port = 1883;
 WiFiClient espClient;
 PubSubClient client(espClient);
 
+//connect to the wifi
 //connect to the wifi
 void connectToWiFi() {
   Serial.print("Connectiog");
@@ -40,7 +62,7 @@ void connectToWiFi() {
 }
 
 //handling the incomming message
-void handleMessage(char *topic, byte *payload, unsigned int length) {
+void handleMessage(char *topic, byte *payload, int length) {
  Serial.print("Message arrived in topic: ");
  Serial.println(topic);
  Serial.print("Message:");
@@ -51,143 +73,283 @@ void handleMessage(char *topic, byte *payload, unsigned int length) {
  Serial.println();
  Serial.println("-----------------------");
 
- if(payload[0] == 70 &&  payload[1] == 49){//automatic mode
+ /*
+ ============================             Control Units   ===============================
+ R1 - Resevior to Fertilizer Motort   - LED_RM D1
+ R2 - Resevior Levl Low               - LED_RP D2
+ R3 - Resevior Level High             - LED_RP D2
+ R4 - Resevior Drain                  - LED_RD D3
+ F1 - Fertilizer Unit                 - LED_F  D4
+ GP - Growing Chamber Ph Value        - LED_GP D5 
+ GD - Growing Chamber DO value        - LED_GD D0
+ GW - Growing Chamber Water Level     - LED_GP D5 
+ L1 - Light intensity Control Unit    - LED_L  D6
+ T1 - Temperature and Airflow control - LED_T  D7
+ H1 - Humidity Control Unit           - LED_H  D8
+ */
+
+ /*
+ =================================  The fertilizer unit ================================
+ 1. Check whether the first character = F (70), second character = 1 (49) 
+ 2. Settig the F1_Ph_value by combining two numbers in 3rd,4th character , Deduct 48 to get the int value from ascii values
+ */
+//++++++++++++++++++++++++ F1 +++++++++++++++++++++++++++++++++++++++++++
+//issue found : manual mode also going to the automatic if condition
+//Solution : && payload[2]<58 & payload[2]>47 (only for 10 numbers)
+
+ if(payload[0] == 70 &&  payload[1] == 49 && payload[2]<58 && payload[2]>47){//automatic mode
     int F1_Ph_value  = ((int)payload[2]-48)*10+(int)(payload[3])-48;
     Serial.println(F1_Ph_value);
       if(F1_Ph_value<55 && F1_Ph_value >0 ){//turn on LED
-      digitalWrite(LED, HIGH);
+      digitalWrite(LED_F, HIGH);
       }
       else if(F1_Ph_value > 55 && F1_Ph_value < 90 ){
-      digitalWrite(LED, LOW);
+      digitalWrite(LED_F, LOW);
       }
-   }
+  }
   if(payload[0] == 70 &&  payload[1] == 49 &&  payload[2] == 95){//manual mode
     if(payload[3] == 111 && payload[4] == 102 && payload[5] == 102){//turn off LED manually
-      digitalWrite(LED, LOW);
+      digitalWrite(LED_F, LOW);
     }
   
     else if(payload[3] == 111 && payload[4] == 110 ){//turn on LED manually
-      digitalWrite(LED, HIGH);
+      digitalWrite(LED_F, HIGH);
+    }
+  }
+
+  /*
+  ==============================  Resevior Unit   =====================================
+  R1 - Resevior Motor
+  R2 - Resevior Levl Low  - RP
+  R3 - Resevior Level High  - RP
+  R4 - Drain
+  */
+
+  //++++++++++++++++++++++++++++++   R1 Resevior Motor +++++++++++++++++++++++++++++++++++
+  
+  if(payload[0] == 82 &&  payload[1] == 49 && payload[2]<58 && payload[2]>47){   //automatic mode
+    int SendToF  = ((int)payload[2])-48;
+    Serial.println(SendToF);
+      if(SendToF == 1 ){   //turn on LED
+      digitalWrite(LED_RM, HIGH);
+      }
+      if(SendToF == 0 ){   //turn on LED
+      digitalWrite(LED_RM, LOW);
+      }
+  }
+  if(payload[0] == 82 &&  payload[1] == 50 &&  payload[2] == 95){//manual mode
+    if(payload[3] == 111 && payload[4] == 102 && payload[5] == 102){//turn off LED manually
+      digitalWrite(LED_RM, LOW);
+    }
+  
+    if(payload[3] == 111 && payload[4] == 110 ){//turn on LED manually
+      digitalWrite(LED_RM, HIGH);
+    }
+  }
+   /*
+  +++++++++++++++++++++  R2 - Resevior Level low   ++++++++++++++++++++++
+  1. Check whether the first character = R (82), second character = 2 (50)
+  if water lvel is low turn on pump
+  if water level is high turn off pump
+  */
+  if(payload[0] == 82 &&  payload[1] == 50 && payload[2]<58 && payload[2]>47){   //automatic mode
+    int water_low  = ((int)payload[2])-48;
+    Serial.println(water_low);
+      if(water_low == 1 ){   //turn on LED
+      //digitalWrite(LED_RP, HIGH);
+      Serial.println("Warning : Water Level is Low");
+      }
+  }
+  if(payload[0] == 82 &&  payload[1] == 50 &&  payload[2] == 95){//manual mode
+    /*if(payload[3] == 111 && payload[4] == 102 && payload[5] == 102){//turn off LED manually
+      digitalWrite(LED_RL, LOW);
+    }*/
+  
+    if(payload[3] == 111 && payload[4] == 110 ){//turn on LED manually
+      //digitalWrite(LED_RP, HIGH);
+      Serial.println("Warning : Water Level is Low");
     }
   }
   
+  /*
+  +++++++++++++++++++++  R3 - Resevior Level High   ++++++++++++++++++++++
+  1. Check whether the first character = R (82), second character = 3 (51)
+  */
+  if(payload[0] == 82 &&  payload[1] == 51 && payload[2]<58 && payload[2]>47){//automatic mode
+    int water_high  = ((int)payload[2]-48);
+    Serial.println(water_high);
+      if(water_high == 1 ){//turn on LED
+      //digitalWrite(LED_RP, LOW);
+      Serial.println("Warning : Water Level is High");
+      }
+      /*else if(water_high == 0){
+      digitalWrite(LED_RH, LOW);
+      }*/
+  }
+  if(payload[0] == 82 &&  payload[1] == 51 &&  payload[2] == 95 && payload[2]<58 && payload[2]>47){//manual mode
+    if(payload[3] == 111 && payload[4] == 102 && payload[5] == 102){//turn off LED manually
+      //digitalWrite(LED_RP, LOW);
+      Serial.println("Warning : Water Level is High");
+    }
   
-//-----------------------Growth Chamber PH value--------------------------------------------------------------------------------------------------------------------------------
+    /*else if(payload[3] == 111 && payload[4] == 110 ){//turn on LED manually
+      digitalWrite(LED_RH, HIGH);
+    }*/
+  }
 
- if(payload[0] == 71 &&  payload[1] == 80){//automatic mode
+  /*
+  +++++++++++++++++++++  R4 - Drain   ++++++++++++++++++++++
+  1. Check whether the first character = R (82), second character = 4 (52)
+  */
+  if(payload[0] == 82 &&  payload[1] == 52 && payload[2]<58 && payload[2]>47){//automatic mode
+    int drain  = ((int)payload[2]-48);
+    Serial.println(drain);
+      if(drain == 1 ){//turn on LED
+      digitalWrite(LED_RD, HIGH);
+      }
+      else if(drain == 0){
+      digitalWrite(LED_RD, LOW);
+      }
+  }
+  if(payload[0] == 82 &&  payload[1] == 52 &&  payload[2] == 95){//manual mode
+    if(payload[3] == 111 && payload[4] == 102 && payload[5] == 102){//turn off LED manually
+      digitalWrite(LED_RD, LOW);
+    }
+  
+    else if(payload[3] == 111 && payload[4] == 110 ){//turn on LED manually
+      digitalWrite(LED_RD, HIGH);
+    }
+  }
+
+  /*
+  =============================  Grouwing Chamber   =====================================
+  GP - Ph Value
+  GD - DO value
+  */
+  /*
+  +++++++++++++++++++++++++++++   GP(71,80) - Chamber Ph value  ++++++++++++++++++++++++++++++++
+  */
+  if(payload[0] == 71 &&  payload[1] == 80 && payload[2]<58 && payload[2]>47){//automatic mode
     int GP_Ph_value  = ((int)payload[2]-48)*10+(int)(payload[3])-48;
     Serial.println(GP_Ph_value);
       if(GP_Ph_value<55 && GP_Ph_value >0 ){//turn on LED
-        digitalWrite(LED1, HIGH);
+        digitalWrite(LED_GP, HIGH);
       }
       else if(GP_Ph_value > 55 && GP_Ph_value < 90 ){
-        digitalWrite(LED1, LOW);
+        digitalWrite(LED_GP, LOW);
       }
-   }
+  }
   if(payload[0] == 71 &&  payload[1] == 80 &&  payload[2] == 95){//manual mode
     if(payload[3] == 111 && payload[4] == 102 && payload[5] == 102){//turn off LED manually
-      digitalWrite(LED1, LOW);
+      digitalWrite(LED_GP, LOW);
     }
   
     else if(payload[3] == 111 && payload[4] == 110 ){//turn on LED manually
-      digitalWrite(LED1, HIGH);
+      digitalWrite(LED_GP, HIGH);
     }
   }
- 
- //-----------------------Growth Chamber DO value--------------------------------------------------------------------------------------------------------------------------------
- 
- if(payload[0] == 71 &&  payload[1] == 68){//automatic mode
+
+  /*
+  +++++++++++++++++++++++++++++   GD(71,68) - Chamber DO value  ++++++++++++++++++++++++++++++++
+  */
+
+  if(payload[0] == 71 &&  payload[1] == 68 && payload[2]<58 && payload[2]>47){//automatic mode
     int GP_Ph_value  = ((int)payload[2]-48)*10+(int)(payload[3])-48;
     Serial.println(GP_Ph_value);
       if(GP_Ph_value<50 && GP_Ph_value >0 ){//turn on LED
-      digitalWrite(LED3, HIGH);
+      digitalWrite(LED_GD, HIGH);
       }
       else if(GP_Ph_value > 50 && GP_Ph_value < 90 ){
-      digitalWrite(LED3, LOW);
+      digitalWrite(LED_GD, LOW);
       }
    }
   if(payload[0] == 71 &&  payload[1] == 68 &&  payload[2] == 95){//manual mode
     if(payload[3] == 111 && payload[4] == 102 && payload[5] == 102){//turn off LED manually
-      digitalWrite(LED3, LOW);
+      digitalWrite(LED_GD, LOW);
     }
   
     else if(payload[3] == 111 && payload[4] == 110 ){//turn on LED manually
-      digitalWrite(LED3, HIGH);
+      digitalWrite(LED_GD, HIGH);
     }
   }
- 
   
-//--------------------------Light Intensity Control-----------------------------------------------------------------------------------------------------------
-  //L1
-  if(payload[0] == 76 &&  payload[1] == 49){//automatic mode
+  /*
+  =============================  Light Intensity Control Unit   =====================================
+  */
+  /*
+  +++++++++++++++++++++++++++++  L1 (76,49) - Light Intensity  ++++++++++++++++++++++++++++++++++++++++++++
+  */
+
+  if(payload[0] == 76 &&  payload[1] == 49 && payload[2]<58 && payload[2]>47){//automatic mode
     int Light_intensity_value = ((int)payload[2]-48)*100+((int)(payload[3])-48)*10 + (int)(payload[4])-48;
     Serial.println(Light_intensity_value);
       if(400 > Light_intensity_value  ){//turn on LED
-        digitalWrite(LED6, HIGH);
+        digitalWrite(LED_L , HIGH);
       }
       else if((700 >Light_intensity_value) && (400 < Light_intensity_value)){
-        digitalWrite(LED6, LOW);
+        digitalWrite(LED_L, LOW);
       }
    }
   if(payload[0] == 76 &&  payload[1] == 49 &&  payload[2] == 95){//manual mode
     if(payload[3] == 111 && payload[4] == 102 && payload[5] == 102){//turn off LED manually
-      digitalWrite(LED6, LOW);
+      digitalWrite(LED_L, LOW);
     }
   
     else if(payload[3] == 111 && payload[4] == 110 ){//turn on LED manually
-      digitalWrite(LED6, HIGH);
+      digitalWrite(LED_L, HIGH);
     }
   }
- 
-}
 
-//--------------------------Temperature and Air Flow Control-------------------------------------------------------------------------------------------------
-  //T1
-  if(payload[0] == 84 &&  payload[1] == 49){//automatic mode
+  /*
+  ============================= Temperature and Airflow control Unit ======================
+  T1 (84,49)
+  */
+  if(payload[0] == 84 &&  payload[1] == 49 && payload[2]<58 && payload[2]>47){//automatic mode
     int inside_temperature_value = ((int)payload[2]-48)*10+((int)(payload[3])-48);
     int outside_temperature_value = ((int)payload[4]-48)*10+((int)(payload[5])-48);
-    Serial.println(Light_intensity_value);
+    Serial.println(inside_temperature_value);
+    Serial.println(outside_temperature_value);
       if((28 < inside_temperature_value) && ( 28 > outside_temperature_value)  ){//turn on LED
-        digitalWrite(LED7, HIGH);
+        digitalWrite(LED_T, HIGH);
       }
       else if((19 < inside_temperature_value) && ( 28 > inside_temperature_value)){
-        digitalWrite(LED7, LOW);
+        digitalWrite(LED_T, LOW);
       }
    }
   if(payload[0] == 84 &&  payload[1] == 49 &&  payload[2] == 95){//manual mode
     if(payload[3] == 111 && payload[4] == 102 && payload[5] == 102){//turn off LED manually
-      digitalWrite(LED7, LOW);
+      digitalWrite(LED_T, LOW);
     }
   
     else if(payload[3] == 111 && payload[4] == 110 ){//turn on LED manually
-      digitalWrite(LED7, HIGH);
+      digitalWrite(LED_T, HIGH);
     }
   }
- 
-}
 
-//--------------------------Humidity Control-----------------------------------------------------------------------------------------------------------------
-  //H1
-  if(payload[0] == 72 &&  payload[1] == 49){//automatic mode
+  /*
+  ============================= Humidity COntrol Unit ======================
+  H1 (72,49)
+  */
+  if(payload[0] == 72 &&  payload[1] == 49  && payload[2]<58 && payload[2]>47 ){//automatic mode
     int humidity_value = ((int)payload[2]-48)*10+((int)(payload[3])-48);
-    Serial.println(Light_intensity_value);
+    Serial.println(humidity_value);
       if(60 > humidity_value ){//turn on LED
-      digitalWrite(LED8, HIGH);
+      digitalWrite(LED_H, HIGH);
       }
       else if((70 > humidity_value) && (60 < humidity_value )){
-      digitalWrite(LED8, LOW);
+      digitalWrite(LED_H, LOW);
       }
    }
   if(payload[0] == 72 &&  payload[1] == 49 &&  payload[2] == 95){//manual mode
     if(payload[3] == 111 && payload[4] == 102 && payload[5] == 102){//turn off LED manually
-      digitalWrite(LED8, LOW);
+      digitalWrite(LED_H, LOW);
     }
   
     else if(payload[3] == 111 && payload[4] == 110 ){//turn on LED manually
-      digitalWrite(LED8, HIGH);
+      digitalWrite(LED_H, HIGH);
     }
   }
- 
+
 }
 
 
@@ -196,8 +358,8 @@ void setup() {
   Serial.begin(9600);
   connectToWiFi();
 
-  pinMode(LED, OUTPUT);
-  digitalWrite(LED, LOW);
+  //pinMode(LED, OUTPUT);
+  //digitalWrite(LED, LOW);
 
  //connecting to a mqtt broker
  client.setServer(mqtt_broker, mqtt_port);
@@ -220,9 +382,59 @@ void setup() {
  //client.publish(topic, "Hi EMQ X I'm ESP32");
  client.subscribe(topic);
 
+ dht.begin();
+  Serial.println(F("DHTxx Unified Sensor Example"));
+  // Print temperature sensor details.
+  sensor_t sensor;
+  dht.temperature().getSensor(&sensor);
+  Serial.println(F("------------------------------------"));
+  Serial.println(F("Temperature Sensor"));
+  Serial.print  (F("Sensor Type: ")); Serial.println(sensor.name);
+  Serial.print  (F("Driver Ver:  ")); Serial.println(sensor.version);
+  Serial.print  (F("Unique ID:   ")); Serial.println(sensor.sensor_id);
+  Serial.print  (F("Max Value:   ")); Serial.print(sensor.max_value); Serial.println(F("°C"));
+  Serial.print  (F("Min Value:   ")); Serial.print(sensor.min_value); Serial.println(F("°C"));
+  Serial.print  (F("Resolution:  ")); Serial.print(sensor.resolution); Serial.println(F("°C"));
+  Serial.println(F("------------------------------------"));
+  // Print humidity sensor details.
+  dht.humidity().getSensor(&sensor);
+  Serial.println(F("Humidity Sensor"));
+  Serial.print  (F("Sensor Type: ")); Serial.println(sensor.name);
+  Serial.print  (F("Driver Ver:  ")); Serial.println(sensor.version);
+  Serial.print  (F("Unique ID:   ")); Serial.println(sensor.sensor_id);
+  Serial.print  (F("Max Value:   ")); Serial.print(sensor.max_value); Serial.println(F("%"));
+  Serial.print  (F("Min Value:   ")); Serial.print(sensor.min_value); Serial.println(F("%"));
+  Serial.print  (F("Resolution:  ")); Serial.print(sensor.resolution); Serial.println(F("%"));
+  Serial.println(F("------------------------------------"));
+  // Set delay between sensor readings based on sensor details.
+  delayMS = sensor.min_delay / 1000;
+
 }
 
 void loop() {
   client.loop();
+
+    delay(delayMS);
+  // Get temperature event and print its value.
+  sensors_event_t event;
+  dht.temperature().getEvent(&event);
+  if (isnan(event.temperature)) {
+    Serial.println(F("Error reading temperature!"));
+  }
+  else {
+    Serial.print(F("Temperature: "));
+    Serial.print(event.temperature);
+    Serial.println(F("°C"));
+  }
+  // Get humidity event and print its value.
+  dht.humidity().getEvent(&event);
+  if (isnan(event.relative_humidity)) {
+    Serial.println(F("Error reading humidity!"));
+  }
+  else {
+    Serial.print(F("Humidity: "));
+    Serial.print(event.relative_humidity);
+    Serial.println(F("%"));
+  }
 
 }
