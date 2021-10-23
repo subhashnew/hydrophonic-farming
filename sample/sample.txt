@@ -35,10 +35,6 @@ MQTT msg format
 "GD_on"  - to manuallt turn on   O2 pump
 "GD_off"  - to manually turn off O2 pump
 
-	Water Level value
-	
-"GW_on"  - to manuallt turn on   the water pump
-"GW_off"  - to manually turn off the water pump
 
 **********Automatic Mode**********
 ******PH********
@@ -59,15 +55,6 @@ if the ,
 MQTT msg format
 "F154"  - to manuallt turn on O2 pump 
 "F156"  - to manually turn off O2 pump
-
-*********Water Level******
-if the ,
-0.0<Water Level< 10.0 cm - turn on water pump
-20.0>Water Level> 10.0 cm  - turn off	 water pump
-
-MQTT msg format
-"F154"  - to manuallt turn on water pump
-"F156"  - to manually turn off water pump
 
 
 ************************Light Intensity Control Unit***********************************
