@@ -1,0 +1,57 @@
+"""Reservoir unit"""
+Let's say it's a (2x1)x1 sized unit
+
+LED for PH vaue - R1
+LED_L for water level HIGH - R2
+LED_H for water level LOW - R3
+LED_D Drain - R4
+
+
+**********Manual mode**********
+
+MQTT msg format
+
+"R1_on"  - to manually turn on LED
+"R1_off"  - to manually turn off LED
+
+"R2_on"  - to manually turn on LED_L
+"R2_off"  - to manually turn off LED_L
+
+"R3_on"  - to manually turn on LED_H
+"R3_off"  - to manually turn off LED_H
+
+"R4_on"  - to manually turn on LED_D
+"R4_off"  - to manually turn off LED_D
+
+**********Automatic Mode**********
+
+if the ,
+0.0<PH value < 5.5  - turn on LED
+9.0>PH value > 5.5  - turn off LED
+
+"""NO leds are on within the optimal water level
+
+LOW = 0  - turn on LED_L
+LOW = 1  - turn off LED_L
+
+HIGH = 1  - turn on LED_H
+HIGH = 0  - turn off LED_H
+
+DRAIN = 1 - turn on LED_D
+DRAIN = 0 - turn off LED_D
+
+
+
+**********MQTT msg format (payload format)************
+"R154"  - to manually turn on
+"R156"  - to manually turn off
+
+"R20"  - to manually turn on
+"R21"  - to manually turn off
+
+"R31"  - to manually turn on
+"R30"  - to manually turn off
+
+"R41"  - to manually turn on
+"R40"  - to manually turn off
+
