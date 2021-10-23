@@ -94,28 +94,6 @@ void handleMessage(char *topic, byte *payload, unsigned int length) {
     }
   }
  
- //-----------------------Growth Chamber EC value--------------------------------------------------------------------------------------------------------------------------------
- 
-  if(payload[0] == 71 &&  payload[1] == 69){//automatic mode
-    int GE_EC_value  = ((int)payload[2]-48)*10+(int)(payload[3])-48;
-    Serial.println(GE_EC_value);
-      if(GE_EC_value<12 && GE_EC_value >0 ){//turn on LED
-        digitalWrite(LED2, HIGH);
-      }
-      else if(GE_EC_value > 12 && GE_EC_value < 30 ){
-        digitalWrite(LED2, LOW);
-      }
-   }
-  if(payload[0] == 71 &&  payload[1] == 69 &&  payload[2] == 95){//manual mode
-    if(payload[3] == 111 && payload[4] == 102 && payload[5] == 102){//turn off LED manually
-      digitalWrite(LED2, LOW);
-    }
-  
-    else if(payload[3] == 111 && payload[4] == 110 ){//turn on LED manually
-      digitalWrite(LED2, HIGH);
-    }
-  }
- 
  //-----------------------Growth Chamber DO value--------------------------------------------------------------------------------------------------------------------------------
  
  if(payload[0] == 71 &&  payload[1] == 68){//automatic mode
@@ -138,28 +116,6 @@ void handleMessage(char *topic, byte *payload, unsigned int length) {
     }
   }
  
- //-----------------------Growth Chamber Water Level--------------------------------------------------------------------------------------------------------------------------------
- 
- if(payload[0] == 71 &&  payload[1] == 87){//automatic mode
-    int GW_Water_Level  = ((int)payload[2]-48)*10+(int)(payload[3])-48;
-    Serial.println(GW_Water_Level);
-      if(GW_Water_Level<10 && GW_Water_Level >0 ){//turn on LED
-        digitalWrite(LED4, HIGH);
-      }
-      else if(GW_Water_Level > 10 && GW_Water_Level < 20 ){
-        digitalWrite(LED4, LOW);
-      }
-   }
-  if(payload[0] == 71 &&  payload[1] == 87 &&  payload[2] == 95){//manual mode
-    if(payload[3] == 111 && payload[4] == 102 && payload[5] == 102){//turn off LED manually
-      digitalWrite(LED4, LOW);
-    }
-  
-    else if(payload[3] == 111 && payload[4] == 110 ){//turn on LED manually
-      digitalWrite(LED4, HIGH);
-    }
-  }
-  
   
 //--------------------------Light Intensity Control-----------------------------------------------------------------------------------------------------------
   //L1
