@@ -70,6 +70,7 @@ void handleMessage(char *topic, byte *payload, int length) {
  F1 - Fertilizer Unit                 - LED_F  D4
  GP - Growing Chamber Ph Value        - LED_GP D5 
  GW - Growing Chamber Water Level     - LED_GP D5
+ GO - Growing chamber OC              - LED_GO D0
  L1 - Light intensity Control Unit    - LED_L  D7
  T1 - Temperature and Airflow control - LED_T  D8
  H1 - Humidity Control Unit           - LED_H1 D6 
