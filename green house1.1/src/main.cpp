@@ -3,11 +3,19 @@
 #include <WiFiClient.h>
 #include <PubSubClient.h>
 
-#define LED D0
+#include <DHT.h>
+#include <Adafruit_Sensor.h>
+#include <DHT_U.h>
+
+#define DHTTYPE    DHT11     // DHT 11
+#define DHTPIN D2
+DHT_Unified dht(DHTPIN, DHTTYPE);
+uint32_t delayMS;
+//#define LED D0
 
 //LED for the resevior unit
 #define LED_RM D1 //R to F motor
-#define LED_RP D2//Pump
+//#define LED_RP D2//Pump
 #define LED_RD D3 //for water drain
 
 //LED for the Fertilezer Unit
@@ -148,7 +156,8 @@ void handleMessage(char *topic, byte *payload, int length) {
     int water_low  = ((int)payload[2])-48;
     Serial.println(water_low);
       if(water_low == 1 ){   //turn on LED
-      digitalWrite(LED_RP, HIGH);
+      //digitalWrite(LED_RP, HIGH);
+      Serial.println("Warning : Water Level is Low");
       }
   }
   if(payload[0] == 82 &&  payload[1] == 50 &&  payload[2] == 95){//manual mode
@@ -157,7 +166,8 @@ void handleMessage(char *topic, byte *payload, int length) {
     }*/
   
     if(payload[3] == 111 && payload[4] == 110 ){//turn on LED manually
-      digitalWrite(LED_RP, HIGH);
+      //digitalWrite(LED_RP, HIGH);
+      Serial.println("Warning : Water Level is Low");
     }
   }
   
@@ -169,7 +179,8 @@ void handleMessage(char *topic, byte *payload, int length) {
     int water_high  = ((int)payload[2]-48);
     Serial.println(water_high);
       if(water_high == 1 ){//turn on LED
-      digitalWrite(LED_RP, LOW);
+      //digitalWrite(LED_RP, LOW);
+      Serial.println("Warning : Water Level is High");
       }
       /*else if(water_high == 0){
       digitalWrite(LED_RH, LOW);
@@ -177,7 +188,8 @@ void handleMessage(char *topic, byte *payload, int length) {
   }
   if(payload[0] == 82 &&  payload[1] == 51 &&  payload[2] == 95 && payload[2]<58 && payload[2]>47){//manual mode
     if(payload[3] == 111 && payload[4] == 102 && payload[5] == 102){//turn off LED manually
-      digitalWrite(LED_RP, LOW);
+      //digitalWrite(LED_RP, LOW);
+      Serial.println("Warning : Water Level is High");
     }
   
     /*else if(payload[3] == 111 && payload[4] == 110 ){//turn on LED manually
@@ -346,8 +358,8 @@ void setup() {
   Serial.begin(9600);
   connectToWiFi();
 
-  pinMode(LED, OUTPUT);
-  digitalWrite(LED, LOW);
+  //pinMode(LED, OUTPUT);
+  //digitalWrite(LED, LOW);
 
  //connecting to a mqtt broker
  client.setServer(mqtt_broker, mqtt_port);
@@ -370,9 +382,59 @@ void setup() {
  //client.publish(topic, "Hi EMQ X I'm ESP32");
  client.subscribe(topic);
 
+ dht.begin();
+  Serial.println(F("DHTxx Unified Sensor Example"));
+  // Print temperature sensor details.
+  sensor_t sensor;
+  dht.temperature().getSensor(&sensor);
+  Serial.println(F("------------------------------------"));
+  Serial.println(F("Temperature Sensor"));
+  Serial.print  (F("Sensor Type: ")); Serial.println(sensor.name);
+  Serial.print  (F("Driver Ver:  ")); Serial.println(sensor.version);
+  Serial.print  (F("Unique ID:   ")); Serial.println(sensor.sensor_id);
+  Serial.print  (F("Max Value:   ")); Serial.print(sensor.max_value); Serial.println(F("°C"));
+  Serial.print  (F("Min Value:   ")); Serial.print(sensor.min_value); Serial.println(F("°C"));
+  Serial.print  (F("Resolution:  ")); Serial.print(sensor.resolution); Serial.println(F("°C"));
+  Serial.println(F("------------------------------------"));
+  // Print humidity sensor details.
+  dht.humidity().getSensor(&sensor);
+  Serial.println(F("Humidity Sensor"));
+  Serial.print  (F("Sensor Type: ")); Serial.println(sensor.name);
+  Serial.print  (F("Driver Ver:  ")); Serial.println(sensor.version);
+  Serial.print  (F("Unique ID:   ")); Serial.println(sensor.sensor_id);
+  Serial.print  (F("Max Value:   ")); Serial.print(sensor.max_value); Serial.println(F("%"));
+  Serial.print  (F("Min Value:   ")); Serial.print(sensor.min_value); Serial.println(F("%"));
+  Serial.print  (F("Resolution:  ")); Serial.print(sensor.resolution); Serial.println(F("%"));
+  Serial.println(F("------------------------------------"));
+  // Set delay between sensor readings based on sensor details.
+  delayMS = sensor.min_delay / 1000;
+
 }
 
 void loop() {
   client.loop();
+
+    delay(delayMS);
+  // Get temperature event and print its value.
+  sensors_event_t event;
+  dht.temperature().getEvent(&event);
+  if (isnan(event.temperature)) {
+    Serial.println(F("Error reading temperature!"));
+  }
+  else {
+    Serial.print(F("Temperature: "));
+    Serial.print(event.temperature);
+    Serial.println(F("°C"));
+  }
+  // Get humidity event and print its value.
+  dht.humidity().getEvent(&event);
+  if (isnan(event.relative_humidity)) {
+    Serial.println(F("Error reading humidity!"));
+  }
+  else {
+    Serial.print(F("Humidity: "));
+    Serial.print(event.relative_humidity);
+    Serial.println(F("%"));
+  }
 
 }
