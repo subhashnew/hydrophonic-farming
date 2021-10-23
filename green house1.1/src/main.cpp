@@ -12,6 +12,10 @@
 #define LED6 D4
 #define LED7 D4
 #define LED8 D4
+#define RF D4 //for sending water to fertilizer unit
+#define RL D4 //for water level low
+#define RH D4 //for water level high
+#define RD D4 //for water drain
 
 const char* SSID = "Dialog 4G 304";
 const char* PWD = "subnew19658";
@@ -187,6 +191,101 @@ void handleMessage(char *topic, byte *payload, unsigned int length) {
       digitalWrite(LED8, HIGH);
     }
   }
+
+//--------------------------Reservoir------------------------------------------------------------------------------------------------------
+
+//R1 - motor to fertilizer unit from reservoir----------------------------------------
+
+ if(payload[0] == 82 &&  payload[1] == 49){//automatic mode
+    int sendToF  = ((int)payload[2]-48);
+    Serial.println(sendToF);
+      if(sendToF = 1 ){//turn on LED
+      digitalWrite(RF, HIGH);
+      }
+      else if(sendToF = 0){
+      digitalWrite(RF, LOW);
+      }
+   }
+  if(payload[0] == 82 &&  payload[1] == 50 &&  payload[2] == 95){//manual mode
+    if(payload[3] == 111 && payload[4] == 102 && payload[5] == 102){//turn off LED manually
+      digitalWrite(RF, LOW);
+    }
+  
+    else if(payload[3] == 111 && payload[4] == 110 ){//turn on LED manually
+      digitalWrite(RF, HIGH);
+    }
+   }
+
+
+//R2 - reservoir_level_LOW---------------------------------------------------------------------
+
+   if(payload[0] == 82 &&  payload[1] == 50){//automatic mode
+    int water_low  = ((int)payload[2]-48);
+    Serial.println(water_low);
+      if(water_low = 0 ){//turn on LED
+      digitalWrite(RL, HIGH);
+      }
+      else if(water_low = 1){
+      digitalWrite(RL, LOW);
+      }
+   }
+  if(payload[0] == 82 &&  payload[1] == 50 &&  payload[2] == 95){//manual mode
+    if(payload[3] == 111 && payload[4] == 102 && payload[5] == 102){//turn off LED manually
+      digitalWrite(RL, LOW);
+    }
+  
+    else if(payload[3] == 111 && payload[4] == 110 ){//turn on LED manually
+      digitalWrite(RL, HIGH);
+    }
+   }
+
+
+//R3 - reservoir_level_HIGH---------------------------------------------------------
+
+   if(payload[0] == 82 &&  payload[1] == 51){//automatic mode
+    int water_high  = ((int)payload[2]-48);
+    Serial.println(water_high);
+      if(water_high = 1 ){//turn on LED
+      digitalWrite(RH, HIGH);
+      }
+      else if(water_high = 0){
+      digitalWrite(RH, LOW);
+      }
+   }
+  if(payload[0] == 82 &&  payload[1] == 51 &&  payload[2] == 95){//manual mode
+    if(payload[3] == 111 && payload[4] == 102 && payload[5] == 102){//turn off LED manually
+      digitalWrite(RH, LOW);
+    }
+  
+    else if(payload[3] == 111 && payload[4] == 110 ){//turn on LED manually
+      digitalWrite(RH, HIGH);
+    }
+   }
+
+
+//R4 - Drainage----------------------------------------------------------------------
+
+   if(payload[0] == 82 &&  payload[1] == 52){//automatic mode
+    int drain  = ((int)payload[2]-48);
+    Serial.println(drain);
+      if(drain = 1 ){//turn on LED
+      digitalWrite(RD, HIGH);
+      }
+      else if(drain = 0){
+      digitalWrite(RD, LOW);
+      }
+   }
+  if(payload[0] == 82 &&  payload[1] == 52 &&  payload[2] == 95){//manual mode
+    if(payload[3] == 111 && payload[4] == 102 && payload[5] == 102){//turn off LED manually
+      digitalWrite(RD, LOW);
+    }
+  
+    else if(payload[3] == 111 && payload[4] == 110 ){//turn on LED manually
+      digitalWrite(RD, HIGH);
+    }
+   }
+
+
  
 }
 
