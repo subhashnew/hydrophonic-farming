@@ -3,7 +3,7 @@
 #include <WiFiClient.h>
 #include <PubSubClient.h>
 
-#define LED D0
+//#define LED D0
 
 //LED for the resevior unit
 #define LED_RM D1//for pump mortor
@@ -13,14 +13,17 @@
 #define LED_F D4
 
 //Groing Chamber LEDs
-#define LED_GP D5 //Ph value
-#define LED_GD D6//DO value
+#define LED_GM D5 //Ph valuegit pull 
+#define LED_GO D0//DO value
 
 //Light intesity control
 #define LED_L D7
 
 //Temperature Control Unit
 #define LED_T D8 //for water drain
+
+//Humidity COntrol
+#define LED_H D6
 
 const char* SSID = "Dialog 4G 304";
 const char* PWD = "subnew19658";
@@ -64,15 +67,15 @@ void handleMessage(char *topic, byte *payload, int length) {
  /*
  ============================             Control Units   ===============================
  R2 - Resevior Input mortr            - LED_RM D1
- R3 - Resevior Drain                  - LED_RH D2
  R4 - Resevior Drain                  - LED_RD D3
  F1 - Fertilizer Unit                 - LED_F  D4
- GP - Growing Chamber Ph Value        - LED_GP D5 
- GD - Growing Chamber DO value        - LED_GD D6
- GW - Growing Chamber Water Level     - not defined
+ GP - Growing Chamber Ph Value        - LED_GM D5
+ GW - Growing Chamber Water Level     - LED_GM D5 
+ GD - Growing Chamber DO value        - LED_G0 D0
  L1 - Light intensity Control Unit    - LED_L  D7
  T1 - Temperature and Airflow control - LED_T  D8
- H1 - Humidity Control Unit           - not defined
+ H1 - Humidity Control Unit           - LED_H  D6
+
 
  */
 
@@ -85,7 +88,7 @@ void handleMessage(char *topic, byte *payload, int length) {
 //issue found : manual mode also going to the automatic if condition
 //Solution : && payload[2]<58 & payload[2]>47 (only for 10 numbers)
 
- if(payload[0] == 70 &&  payload[1] == 49){//automatic mode
+ if(payload[0] == 70 &&  payload[1] == 49 && payload[2]<58 && payload[2]>47){//automatic mode
     int F1_Ph_value  = ((int)payload[2]-48)*10+(int)(payload[3])-48;
     Serial.println(F1_Ph_value);
       if(F1_Ph_value<55 && F1_Ph_value >0 ){//turn on LED
@@ -120,7 +123,7 @@ void handleMessage(char *topic, byte *payload, int length) {
     int water_low  = ((int)payload[2])-48;
     Serial.println(water_low);
       if(water_low == 0 ){   //turn on LED
-      digitalWrite(LED_RL, HIGH);
+      digitalWrite(LED_RM, HIGH);
       }
       else if(water_low == 1){
       digitalWrite(LED_RL, LOW);
@@ -297,8 +300,8 @@ void setup() {
   Serial.begin(9600);
   connectToWiFi();
 
-  pinMode(LED, OUTPUT);
-  digitalWrite(LED, LOW);
+  //pinMode(LED, OUTPUT);
+  //digitalWrite(LED, LOW);
 
  //connecting to a mqtt broker
  client.setServer(mqtt_broker, mqtt_port);
