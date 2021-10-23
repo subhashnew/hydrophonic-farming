@@ -287,28 +287,28 @@ void handleMessage(char *topic, byte *payload, int length) {
   */
 
   if(payload[0] == 71 &&  payload[1] == 68 && payload[2]<58 && payload[2]>47){//automatic mode
-    int GP_Ph_value  = ((int)payload[2]-48)*10+(int)(payload[3])-48;
-    Serial.println(GP_Ph_value);
+    int GD_value  = ((int)payload[2]-48)*10+(int)(payload[3])-48;
+    Serial.println(GD_value);
     char sub_topic[16];
-    client.publish("CO326/2021/HF/1/sensor/ph2", itoa(GP_Ph_value,sub_topic,10));
-      if(GP_Ph_value<50 && GP_Ph_value >0 ){//turn on LED
+    client.publish("CO326/2021/HF/1/sensor/oxygen", itoa(GD_value,sub_topic,10));
+      if(GD_value<50 && GD_value >0 ){//turn on LED
       digitalWrite(LED_GD, HIGH);
-      client.publish("CO326/2021/HF/1/control/ph2/pump2", "GD_on");
+      //client.publish("CO326/2021/HF/1/control/ph2/pump2", "GD_on");
       }
-      else if(GP_Ph_value > 50 && GP_Ph_value < 90 ){
+      else if(GD_value > 50 && GP_Ph_value < 90 ){
       digitalWrite(LED_GD, LOW);
-      client.publish("CO326/2021/HF/1/control/ph2/pump2", "GD_off");
+      //client.publish("CO326/2021/HF/1/control/ph2/pump2", "GD_off");
       }
    }
   if(payload[0] == 71 &&  payload[1] == 68 &&  payload[2] == 95){//manual mode
     if(payload[3] == 111 && payload[4] == 102 && payload[5] == 102){//turn off LED manually
       digitalWrite(LED_GD, LOW);
-      client.publish("CO326/2021/HF/1/control/ph2/pump2", "GD_off");
+      //client.publish("CO326/2021/HF/1/control/ph2/pump2", "GD_off");
     }
   
     else if(payload[3] == 111 && payload[4] == 110 ){//turn on LED manually
       digitalWrite(LED_GD, HIGH);
-      client.publish("CO326/2021/HF/1/control/ph2/pump2", "GD_on");
+      //client.publish("CO326/2021/HF/1/control/ph2/pump2", "GD_on");
     }
   }
   
