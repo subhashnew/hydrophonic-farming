@@ -352,14 +352,41 @@ void handleMessage(char *topic, byte *payload, int length) {
 
 }
 
-
+ /*
+ ============================             Control Units   ===============================
+ R1 - Resevior to Fertilizer Motort   - LED_RM D1
+ R2 - Resevior Levl Low               - LED_RP 
+ R3 - Resevior Level High             - LED_RP 
+ R4 - Resevior Drain                  - LED_RD D3
+ F1 - Fertilizer Unit                 - LED_F  D4
+ GP - Growing Chamber Ph Value        - LED_GP D5 
+ GD - Growing Chamber DO value        - LED_GD D0
+ GW - Growing Chamber Water Level     - LED_GP D5 
+ L1 - Light intensity Control Unit    - LED_L  D6
+ T1 - Temperature and Airflow control - LED_T  D7
+ H1 - Humidity Control Unit           - LED_H  D8
+ */
 
 void setup() {
   Serial.begin(9600);
   connectToWiFi();
 
-  //pinMode(LED, OUTPUT);
-  //digitalWrite(LED, LOW);
+  pinMode(LED_RM, OUTPUT);
+  digitalWrite(LED_RM, LOW);
+  pinMode(LED_RD, OUTPUT);
+  digitalWrite(LED_RD, LOW);
+  pinMode(LED_F, OUTPUT);
+  digitalWrite(LED_F, LOW);
+  pinMode(LED_GP, OUTPUT);
+  digitalWrite(LED_GP, LOW);
+  pinMode(LED_GD, OUTPUT);
+  digitalWrite(LED_GD, LOW);
+  pinMode(LED_L, OUTPUT);
+  digitalWrite(LED_L, LOW);
+  pinMode(LED_T, OUTPUT);
+  digitalWrite(LED_T, LOW);
+  pinMode(LED_H OUTPUT);
+  digitalWrite(LED_H LOW);
 
  //connecting to a mqtt broker
  client.setServer(mqtt_broker, mqtt_port);
