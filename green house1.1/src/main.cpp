@@ -6,8 +6,7 @@
 #define LED D0
 
 //LED for the resevior unit
-#define LED_RL D1 //for water level low
-#define LED_RH D2//for water level high
+#define LED_RM D1//for pump mortor
 #define LED_RD D3 //for water drain
 
 //LED for the Fertilezer Unit
@@ -64,8 +63,8 @@ void handleMessage(char *topic, byte *payload, int length) {
 
  /*
  ============================             Control Units   ===============================
- R2 - Resevior Levl Low               - LED_RL D1
- R3 - Resevior Level High             - LED_RH D2
+ R2 - Resevior Input mortr            - LED_RM D1
+ R3 - Resevior Drain                  - LED_RH D2
  R4 - Resevior Drain                  - LED_RD D3
  F1 - Fertilizer Unit                 - LED_F  D4
  GP - Growing Chamber Ph Value        - LED_GP D5 
